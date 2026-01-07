@@ -1,10 +1,19 @@
+import React, { useRef, useState } from "react";
+import { gsap } from "gsap";
+import { useGSAP } from "@gsap/react";
+import {
+  Mail,
+  MapPin,
+  Send,
+  Github,
+  Linkedin,
+  Twitter,
+  AlertCircle,
+  ArrowRight,
+} from "lucide-react";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-import React, { useRef, useState } from 'react';
-import { gsap } from 'gsap';
-import { useGSAP } from '@gsap/react';
-import { Mail, MapPin, Send, Github, Linkedin, Twitter, AlertCircle } from 'lucide-react';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
+// Types
 interface FormState {
   fullName: string;
   email: string;
@@ -19,132 +28,64 @@ interface FormErrors {
 
 const Contact: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const buttonPulseRef = useRef<gsap.core.Tween | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
   // Form State
   const [formData, setFormData] = useState<FormState>({
-    fullName: '',
-    email: '',
-    message: ''
+    fullName: "",
+    email: "",
+    message: "",
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
-  useGSAP(() => {
-    gsap.registerPlugin(ScrollTrigger);
+  // --- Animations ---
+  useGSAP(
+    () => {
+      gsap.registerPlugin(ScrollTrigger);
 
-    // Staggered Entrance for Left Column items
-    gsap.from('.contact-item', {
-      scrollTrigger: {
-        trigger: '.contact-section',
-        start: 'top 85%',
-      },
-      y: 40,
-      opacity: 0,
-      stagger: 0.2,
-      duration: 1,
-      ease: 'power3.out'
-    });
+      // 1. Text & Info Entrance
+      gsap.from(".contact-info-anim", {
+        scrollTrigger: {
+          trigger: containerRef.current,
+          start: "top 75%",
+        },
+        y: 50,
+        opacity: 0,
+        stagger: 0.1,
+        duration: 1,
+        ease: "power3.out",
+      });
 
-    // Enhanced Dynamic Entry for Form Fields
-    gsap.from('.form-field', {
-      scrollTrigger: {
-        trigger: '.contact-form',
-        start: 'top 85%',
-      },
-      y: 50,
-      scale: 0.9,
-      rotationX: -15,
-      opacity: 0,
-      stagger: {
-        amount: 0.6,
-        from: "start"
-      },
-      duration: 1.2,
-      ease: 'back.out(1.4)',
-      clearProps: "transform"
-    });
-  }, { scope: containerRef });
+      // 2. Form Entrance (3D Flip Effect)
+      gsap.from(formRef.current, {
+        scrollTrigger: {
+          trigger: containerRef.current,
+          start: "top 70%",
+        },
+        x: 50,
+        opacity: 0,
+        rotationY: 10,
+        duration: 1.2,
+        ease: "power3.out",
+      });
+    },
+    { scope: containerRef }
+  );
 
+  // --- Validation Logic ---
   const validate = (): boolean => {
     const newErrors: FormErrors = {};
-    
-    if (!formData.fullName.trim()) {
-      newErrors.fullName = 'Please enter your full name';
-    } else if (formData.fullName.trim().length < 2) {
-      newErrors.fullName = 'Name must be at least 2 characters';
-    }
-
+    if (!formData.fullName.trim()) newErrors.fullName = "Name is required";
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email address is required';
-    } else if (!emailRegex.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
-    }
-
-    if (!formData.message.trim()) {
-      newErrors.message = 'Please enter a message';
-    } else if (formData.message.trim().length < 10) {
-      newErrors.message = 'Message should be at least 10 characters';
-    }
+    if (!formData.email.trim() || !emailRegex.test(formData.email))
+      newErrors.email = "Valid email required";
+    if (!formData.message.trim() || formData.message.length < 10)
+      newErrors.message = "Message too short";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    // Clear error when user starts typing
-    if (errors[name as keyof FormErrors]) {
-      setErrors(prev => ({ ...prev, [name]: undefined }));
-    }
-  };
-
-  const handleButtonEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (buttonPulseRef.current) buttonPulseRef.current.kill();
-    if (isSubmitting) return;
-
-    buttonPulseRef.current = gsap.to(e.currentTarget, {
-      scale: 1.025,
-      boxShadow: '0 0 25px rgba(59, 130, 246, 0.4)',
-      duration: 0.8,
-      repeat: -1,
-      yoyo: true,
-      ease: 'sine.inOut'
-    });
-  };
-
-  const handleButtonLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (buttonPulseRef.current) {
-      buttonPulseRef.current.kill();
-    }
-    gsap.to(e.currentTarget, {
-      scale: 1,
-      boxShadow: '0 0 0px rgba(59, 130, 246, 0)',
-      duration: 0.4,
-      ease: 'power2.out'
-    });
-  };
-
-  const handleSocialEnter = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    gsap.to(e.currentTarget, {
-      scale: 1.2,
-      backgroundColor: '#3b82f6',
-      color: '#ffffff',
-      duration: 0.4,
-      ease: 'back.out(2)'
-    });
-  };
-
-  const handleSocialLeave = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    gsap.to(e.currentTarget, {
-      scale: 1,
-      backgroundColor: 'rgba(255, 255, 255, 0.05)',
-      color: '#ffffff',
-      duration: 0.3,
-      ease: 'power2.in'
-    });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -152,165 +93,237 @@ const Contact: React.FC = () => {
     if (!validate()) return;
 
     setIsSubmitting(true);
-    
+
+    // Simulate API call
     setTimeout(() => {
-      alert('Thank you, Lorn David has received your message!');
       setIsSubmitting(false);
-      setFormData({ fullName: '', email: '', message: '' });
-      setErrors({});
+      setIsSuccess(true);
+      setFormData({ fullName: "", email: "", message: "" });
+
+      // Reset success message after 3 seconds
+      setTimeout(() => setIsSuccess(false), 3000);
     }, 1500);
   };
 
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (errors[e.target.name as keyof FormErrors]) {
+      setErrors({ ...errors, [e.target.name]: undefined });
+    }
+  };
+
   return (
-    <div ref={containerRef} className="container mx-auto px-6 contact-section py-20">
-      <div className="grid lg:grid-cols-2 gap-16 lg:gap-32">
-        {/* Left Column: Contact Info */}
-        <div className="flex flex-col justify-center">
-          <div className="contact-item inline-block px-4 py-1.5 bg-primary/10 rounded-full mb-6">
-            <span className="text-primary font-bold text-xs uppercase tracking-widest">Get In Touch</span>
-          </div>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold mb-8 contact-item leading-tight text-white">
-            Let's Shape The <br /><span className="text-primary">Next Project.</span>
-          </h2>
-          <p className="text-gray-400 text-lg mb-12 contact-item max-w-lg">
-            Whether you need a full-stack developer or an IT infrastructure specialist, I'm here to help turn your vision into reality.
-          </p>
+    <section
+      id="contact"
+      ref={containerRef}
+      className="relative py-24 lg:py-32 bg-[#050505] overflow-hidden"
+    >
+      {/* --- 1. SHARED UNIFIED BACKGROUND (Exact Match) --- */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        {/* Base Gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#050505] via-[#0a0a0a] to-black"></div>
 
-          <div className="space-y-10 mb-12">
-            <div className="flex items-center space-x-6 contact-item group">
-              <div className="w-14 h-14 bg-white/5 border border-white/10 flex items-center justify-center rounded-2xl text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
-                <Mail size={24} />
-              </div>
-              <div>
-                <p className="text-xs text-gray-500 uppercase tracking-widest font-bold mb-1">Email Me</p>
-                <a href="mailto:david.lorn@student.uc.edu.kh" className="text-lg font-medium hover:text-primary transition-colors text-white">
-                  david.lorn@student.uc.edu.kh
-                </a>
-              </div>
-            </div>
-            <div className="flex items-center space-x-6 contact-item group">
-              <div className="w-14 h-14 bg-white/5 border border-white/10 flex items-center justify-center rounded-2xl text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
-                <MapPin size={24} />
-              </div>
-              <div>
-                <p className="text-xs text-gray-500 uppercase tracking-widest font-bold mb-1">Based In</p>
-                <p className="text-lg font-medium text-white">Phnom Penh, Cambodia</p>
-              </div>
-            </div>
-          </div>
+        {/* Noise Texture */}
+        <div
+          className="absolute inset-0 opacity-[0.03] z-10"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+          }}
+        ></div>
 
-          <div className="flex space-x-4 contact-item">
-            {[Github, Linkedin, Twitter].map((Icon, i) => (
-              <a 
-                key={i} 
-                href="#" 
-                className="w-12 h-12 bg-white/5 border border-white/10 flex items-center justify-center rounded-full text-white transition-colors"
-                onMouseEnter={handleSocialEnter}
-                onMouseLeave={handleSocialLeave}
+        {/* Grid Pattern */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_at_center,black_50%,transparent_100%)] z-0"></div>
+      </div>
+
+      <div className="container mx-auto px-6 relative z-10">
+        <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+          {/* --- LEFT: Contact Info --- */}
+          <div>
+            <div className="contact-info-anim inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-6 backdrop-blur-md">
+              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-gray-300">
+                Available for hire
+              </span>
+            </div>
+
+            <h2 className="contact-info-anim text-5xl md:text-6xl font-black text-white mb-6 leading-[1.1] tracking-tight">
+              Let's build something <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
+                extraordinary.
+              </span>
+            </h2>
+
+            <p className="contact-info-anim text-lg text-gray-400 mb-12 max-w-md leading-relaxed">
+              Whether you have a groundbreaking idea or need to modernize your
+              infrastructure, I'm ready to help.
+            </p>
+
+            {/* Info Cards */}
+            <div className="space-y-6">
+              <a
+                href="mailto:david.lorn@student.uc.edu.kh"
+                className="contact-info-anim group flex items-center gap-5 p-4 rounded-2xl transition-all duration-300 hover:bg-white/5 border border-transparent hover:border-white/10"
               >
-                <Icon size={20} />
+                <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
+                  <Mail size={24} />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+                    Email Me
+                  </p>
+                  <p className="text-xl font-medium text-white group-hover:text-blue-400 transition-colors">
+                    david.lorn@student.uc.edu.kh
+                  </p>
+                </div>
               </a>
-            ))}
-          </div>
-        </div>
 
-        {/* Right Column: Contact Form */}
-        <div className="contact-form perspective-1000">
-          <form onSubmit={handleSubmit} className="bg-card/50 backdrop-blur-sm p-8 sm:p-12 rounded-[2.5rem] border border-white/10 space-y-6 shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl rounded-full"></div>
-            
-            <div className="grid md:grid-cols-2 gap-8">
-              <div className="form-field space-y-2">
-                <label className="text-xs text-gray-400 font-bold uppercase tracking-widest ml-1">Full Name</label>
-                <div className="relative">
-                  <input 
-                    type="text" 
+              <div className="contact-info-anim group flex items-center gap-5 p-4 rounded-2xl">
+                <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400">
+                  <MapPin size={24} />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+                    Location
+                  </p>
+                  <p className="text-xl font-medium text-white">
+                    Phnom Penh, Cambodia
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Socials */}
+            <div className="contact-info-anim flex gap-4 mt-12">
+              {[Github, Linkedin, Twitter].map((Icon, i) => (
+                <a
+                  key={i}
+                  href="#"
+                  className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all duration-300 hover:-translate-y-1"
+                >
+                  <Icon size={20} />
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* --- RIGHT: Modern Form --- */}
+          <div className="relative">
+            {/* Subtle Form Backlight (Replaces Color Blobs for Cleaner Look) */}
+            <div className="absolute inset-0 bg-white/5 blur-3xl -z-10 rounded-full opacity-20 transform scale-90"></div>
+
+            <form
+              ref={formRef}
+              onSubmit={handleSubmit}
+              className="bg-[#111]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-10 shadow-2xl relative overflow-hidden"
+            >
+              {/* Success Overlay */}
+              {isSuccess && (
+                <div className="absolute inset-0 bg-[#111]/95 backdrop-blur-md z-20 flex flex-col items-center justify-center text-center p-8 animate-in fade-in duration-300">
+                  <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center text-green-500 mb-4">
+                    <Send size={32} />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-2">
+                    Message Sent!
+                  </h3>
+                  <p className="text-gray-400">
+                    I'll get back to you within 24 hours.
+                  </p>
+                </div>
+              )}
+
+              <div className="space-y-6">
+                {/* Name Input */}
+                <div className="group">
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1 group-focus-within:text-blue-400 transition-colors">
+                    Name
+                  </label>
+                  <input
+                    type="text"
                     name="fullName"
                     value={formData.fullName}
                     onChange={handleInputChange}
                     placeholder="John Doe"
-                    className={`w-full bg-white/5 border ${errors.fullName ? 'border-red-500/50 focus:ring-red-500/20' : 'border-white/10 focus:ring-primary/40'} rounded-2xl px-6 py-5 text-white focus:outline-none focus:ring-2 focus:border-primary transition-all placeholder:text-gray-600 shadow-inner`}
+                    className={`w-full bg-white/5 border ${
+                      errors.fullName ? "border-red-500" : "border-white/10"
+                    } rounded-xl px-5 py-4 text-white placeholder:text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-300`}
                   />
                   {errors.fullName && (
-                    <div className="flex items-center mt-2 text-red-500 text-[10px] font-bold uppercase tracking-wider animate-in fade-in slide-in-from-top-1">
-                      <AlertCircle size={12} className="mr-1" /> {errors.fullName}
-                    </div>
+                    <p className="text-red-500 text-xs mt-2 flex items-center gap-1">
+                      <AlertCircle size={12} /> {errors.fullName}
+                    </p>
                   )}
                 </div>
-              </div>
-              <div className="form-field space-y-2">
-                <label className="text-xs text-gray-400 font-bold uppercase tracking-widest ml-1">Email</label>
-                <div className="relative">
-                  <input 
-                    type="email" 
+
+                {/* Email Input */}
+                <div className="group">
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1 group-focus-within:text-purple-400 transition-colors">
+                    Email
+                  </label>
+                  <input
+                    type="email"
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    placeholder="john@example.com"
-                    className={`w-full bg-white/5 border ${errors.email ? 'border-red-500/50 focus:ring-red-500/20' : 'border-white/10 focus:ring-primary/40'} rounded-2xl px-6 py-5 text-white focus:outline-none focus:ring-2 focus:border-primary transition-all placeholder:text-gray-600 shadow-inner`}
+                    placeholder="hello@example.com"
+                    className={`w-full bg-white/5 border ${
+                      errors.email ? "border-red-500" : "border-white/10"
+                    } rounded-xl px-5 py-4 text-white placeholder:text-gray-600 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all duration-300`}
                   />
                   {errors.email && (
-                    <div className="flex items-center mt-2 text-red-500 text-[10px] font-bold uppercase tracking-wider animate-in fade-in slide-in-from-top-1">
-                      <AlertCircle size={12} className="mr-1" /> {errors.email}
-                    </div>
+                    <p className="text-red-500 text-xs mt-2 flex items-center gap-1">
+                      <AlertCircle size={12} /> {errors.email}
+                    </p>
                   )}
                 </div>
+
+                {/* Message Input */}
+                <div className="group">
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1 group-focus-within:text-white transition-colors">
+                    Message
+                  </label>
+                  <textarea
+                    name="message"
+                    value={formData.message}
+                    onChange={handleInputChange}
+                    rows={4}
+                    placeholder="Tell me about your project..."
+                    className={`w-full bg-white/5 border ${
+                      errors.message ? "border-red-500" : "border-white/10"
+                    } rounded-xl px-5 py-4 text-white placeholder:text-gray-600 focus:outline-none focus:border-white focus:ring-1 focus:ring-white transition-all duration-300 resize-none`}
+                  />
+                  {errors.message && (
+                    <p className="text-red-500 text-xs mt-2 flex items-center gap-1">
+                      <AlertCircle size={12} /> {errors.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full bg-white text-black font-bold text-sm uppercase tracking-widest py-4 rounded-xl hover:bg-blue-500 hover:text-white hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
+                >
+                  {isSubmitting ? (
+                    "Sending..."
+                  ) : (
+                    <>
+                      Send Message{" "}
+                      <ArrowRight
+                        size={18}
+                        className="group-hover:translate-x-1 transition-transform"
+                      />
+                    </>
+                  )}
+                </button>
               </div>
-            </div>
-            
-            <div className="form-field space-y-2">
-              <label className="text-xs text-gray-400 font-bold uppercase tracking-widest ml-1">Your Message</label>
-              <div className="relative">
-                <textarea 
-                  name="message"
-                  value={formData.message}
-                  onChange={handleInputChange}
-                  rows={4} 
-                  placeholder="Tell me about your project..."
-                  className={`w-full bg-white/5 border ${errors.message ? 'border-red-500/50 focus:ring-red-500/20' : 'border-white/10 focus:ring-primary/40'} rounded-2xl px-6 py-5 text-white focus:outline-none focus:ring-2 focus:border-primary transition-all resize-none placeholder:text-gray-600 shadow-inner`}
-                />
-                {errors.message && (
-                  <div className="flex items-center mt-2 text-red-500 text-[10px] font-bold uppercase tracking-wider animate-in fade-in slide-in-from-top-1">
-                    <AlertCircle size={12} className="mr-1" /> {errors.message}
-                  </div>
-                )}
-              </div>
-            </div>
-            
-            <button 
-              type="submit" 
-              disabled={isSubmitting}
-              className={`form-field w-full py-5 ${isSubmitting ? 'bg-gray-700 cursor-not-allowed' : 'bg-primary'} text-white font-black text-lg rounded-2xl hover:bg-white hover:text-black transition-all duration-500 flex items-center justify-center uppercase tracking-widest shadow-lg shadow-primary/20 mt-4`}
-              onMouseEnter={handleButtonEnter}
-              onMouseLeave={handleButtonLeave}
-            >
-              {isSubmitting ? 'Sending...' : 'Send Message'} 
-              {!isSubmitting && <Send size={20} className="ml-3" />}
-            </button>
-            
-            <p className="form-field text-center text-xs text-gray-500 font-medium">
-              I'll typically respond within 24 hours.
-            </p>
-          </form>
+            </form>
+          </div>
         </div>
       </div>
-      <style dangerouslySetInnerHTML={{ __html: `
-        .perspective-1000 {
-          perspective: 1000px;
-        }
-        @keyframes fade-in {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        @keyframes slide-in-from-top-1 {
-          from { transform: translateY(-4px); }
-          to { transform: translateY(0); }
-        }
-        .animate-in {
-          animation: fade-in 0.3s ease-out, slide-in-from-top-1 0.3s ease-out;
-        }
-      `}} />
-    </div>
+    </section>
   );
 };
 

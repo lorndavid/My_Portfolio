@@ -1,103 +1,242 @@
+import React, { useRef } from "react";
+import { gsap } from "gsap";
+import { useGSAP } from "@gsap/react";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { ArrowUpRight, Github } from "lucide-react";
 
-import React, { useRef } from 'react';
-import { gsap } from 'gsap';
-import { useGSAP } from '@gsap/react';
-import { ExternalLink, Github, Layers } from 'lucide-react';
+const PROJECTS = [
+  {
+    id: 1,
+    title: "Student Management",
+    category: "Web Application",
+    desc: "A comprehensive dashboard for universities to manage student records, grades, and attendance seamlessly.",
+    tech: ["Laravel", "React", "MySQL"],
+    image:
+      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2426&auto=format&fit=crop",
+    year: "2024",
+  },
+  {
+    id: 2,
+    title: "Internet ISP Dashboard",
+    category: "Network Tools",
+    desc: "Real-time monitoring system for ISP providers to track bandwidth usage, user status, and hardware health.",
+    tech: ["TypeScript", "Firebase", "Node.js"],
+    image:
+      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2670&auto=format&fit=crop",
+    year: "2024",
+  },
+  {
+    id: 3,
+    title: "Khmer History Portfolio",
+    category: "Creative Website",
+    desc: "An immersive cultural portfolio blending traditional Khmer 'Digital Angkor' aesthetics with modern 3D web technologies.",
+    tech: ["GSAP", "React", "Tailwind"],
+    image:
+      "https://images.unsplash.com/photo-1600607686527-6fb886090705?q=80&w=2500&auto=format&fit=crop",
+    year: "2025",
+  },
+  {
+    id: 4,
+    title: "Telegram Bot AI",
+    category: "Automation",
+    desc: "A bilingual chatbot integrated with OpenAI to assist users with automated customer support replies.",
+    tech: ["Python", "Telegram API", "AI"],
+    image:
+      "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=2670&auto=format&fit=crop",
+    year: "2025",
+  },
+];
 
 const Projects: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  useGSAP(() => {
-    gsap.from('.project-card', {
-      scrollTrigger: {
-        trigger: '.project-grid',
-        start: 'top 80%',
-      },
-      y: 60,
-      opacity: 0,
-      stagger: 0.2,
-      duration: 1,
-      ease: 'power4.out'
-    });
-  }, { scope: containerRef });
+  useGSAP(
+    () => {
+      gsap.registerPlugin(ScrollTrigger);
+
+      // --- DESKTOP HORIZONTAL SCROLL LOGIC ---
+      // Only runs on screens larger than 1024px
+      const mm = gsap.matchMedia();
+
+      mm.add("(min-width: 1024px)", () => {
+        const sections = gsap.utils.toArray(".project-panel");
+        const totalWidth = 100 * (sections.length - 1); // Calculate drag distance
+
+        gsap.to(sections, {
+          xPercent: -100 * (sections.length - 1),
+          ease: "none",
+          scrollTrigger: {
+            trigger: containerRef.current,
+            pin: true,
+            scrub: 1,
+            snap: 1 / (sections.length - 1),
+            // Adjust 'end' to control how long the scroll lasts
+            end: () => "+=" + scrollContainerRef.current?.offsetWidth,
+          },
+        });
+      });
+
+      // --- MOBILE FADE IN LOGIC ---
+      mm.add("(max-width: 1023px)", () => {
+        gsap.from(".project-card-mobile", {
+          y: 50,
+          opacity: 0,
+          stagger: 0.2,
+          scrollTrigger: {
+            trigger: containerRef.current,
+            start: "top 70%",
+          },
+        });
+      });
+    },
+    { scope: containerRef }
+  );
 
   return (
-    <div ref={containerRef} className="container mx-auto px-6">
-      <div className="flex flex-col md:flex-row justify-between items-end mb-16 space-y-4 md:space-y-0">
-        <div>
-          <h2 className="text-4xl md:text-5xl font-display font-bold">Featured Projects</h2>
-          <p className="text-gray-500 mt-4 max-w-xl">
-            A selection of my recent works in software development and technical solutions.
-          </p>
+    <section
+      id="projects"
+      ref={containerRef}
+      className="bg-[#0a0a0a] text-white overflow-hidden relative"
+    >
+      {/* HEADER (Absolute on Desktop, static on Mobile) */}
+      <div className="lg:absolute lg:top-12 lg:left-12 lg:z-10 px-6 py-12 lg:p-0">
+        <div className="flex items-center gap-4 mb-2">
+          <div className="h-[1px] w-12 bg-amber-500"></div>
+          <span className="text-amber-500 font-bold uppercase tracking-widest text-xs">
+            Selected Works
+          </span>
         </div>
-        <div className="hidden md:block">
-           <a href="#" className="flex items-center text-primary font-bold group">
-             View All Projects 
-             <ExternalLink size={18} className="ml-2 group-hover:translate-x-1 transition-transform" />
-           </a>
-        </div>
+        <h2 className="text-4xl md:text-5xl font-black tracking-tighter">
+          Featured Projects
+        </h2>
       </div>
 
-      <div className="project-grid grid lg:grid-cols-12 gap-8">
-        {/* Main Featured Project */}
-        <div className="project-card lg:col-span-8 group relative bg-card rounded-3xl overflow-hidden border border-white/5">
-          <div className="grid md:grid-cols-2 h-full">
-            <div className="p-10 flex flex-col justify-center">
-              <div className="flex items-center space-x-2 text-primary text-xs font-bold uppercase tracking-widest mb-4">
-                <Layers size={14} />
-                <span>Major Project</span>
+      {/* --- DESKTOP VIEW (Horizontal Scroll) --- */}
+      <div
+        ref={scrollContainerRef}
+        className="hidden lg:flex w-[400%] h-screen"
+      >
+        {PROJECTS.map((project, index) => (
+          <div
+            key={project.id}
+            className="project-panel w-screen h-screen flex items-center justify-center p-24 relative flex-shrink-0 border-r border-white/5"
+          >
+            {/* Background Number */}
+            <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[30vw] font-black text-white/[0.02] pointer-events-none select-none font-display">
+              0{index + 1}
+            </span>
+
+            <div className="w-full max-w-6xl grid grid-cols-2 gap-16 items-center">
+              {/* Text Side */}
+              <div className="space-y-8">
+                <div className="flex items-center gap-3">
+                  <span className="px-3 py-1 rounded-full border border-white/10 text-xs font-mono text-gray-400">
+                    {project.year}
+                  </span>
+                  <span className="px-3 py-1 rounded-full bg-amber-500/10 text-amber-500 text-xs font-bold uppercase">
+                    {project.category}
+                  </span>
+                </div>
+
+                <h3 className="text-6xl font-black leading-tight hover:text-amber-500 transition-colors duration-300 cursor-pointer">
+                  {project.title}
+                </h3>
+
+                <p className="text-xl text-gray-400 max-w-md leading-relaxed">
+                  {project.desc}
+                </p>
+
+                <div className="flex flex-wrap gap-2">
+                  {project.tech.map((t) => (
+                    <span
+                      key={t}
+                      className="text-sm font-medium text-gray-300 bg-white/5 px-4 py-2 rounded-lg"
+                    >
+                      {t}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="pt-4 flex items-center gap-6">
+                  <button className="flex items-center gap-2 bg-white text-black px-8 py-3 rounded-full font-bold uppercase tracking-wide hover:bg-amber-400 transition-all">
+                    View Case <ArrowUpRight size={18} />
+                  </button>
+                  <button className="flex items-center gap-2 text-white/50 hover:text-white transition-colors">
+                    <Github size={20} />{" "}
+                    <span className="underline underline-offset-4">
+                      Source Code
+                    </span>
+                  </button>
+                </div>
               </div>
-              <h3 className="text-3xl font-display font-bold mb-4">Student Image Management System</h3>
-              <p className="text-gray-400 mb-8">
-                A robust, secure platform designed for educational institutions to organize and manage student identification and media assets efficiently.
-              </p>
-              <div className="flex flex-wrap gap-2 mb-8">
-                {['React', 'Firebase', 'Supabase'].map(tag => (
-                  <span key={tag} className="px-3 py-1 bg-white/5 text-gray-300 text-xs rounded-full">{tag}</span>
-                ))}
+
+              {/* Image Side */}
+              <div className="relative group perspective-1000">
+                <div className="aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl border border-white/10 transform transition-transform duration-700 group-hover:rotate-y-12 group-hover:scale-95">
+                  <img
+                    src={project.image}
+                    alt={project.title}
+                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors"></div>
+                </div>
               </div>
-              <div className="flex space-x-6 mt-auto">
-                <a href="#" className="text-white hover:text-primary transition-colors flex items-center text-sm font-bold">
-                  View Demo <ExternalLink size={16} className="ml-2" />
-                </a>
-                <a href="#" className="text-gray-500 hover:text-white transition-colors flex items-center text-sm font-bold">
-                  Source <Github size={16} className="ml-2" />
-                </a>
-              </div>
-            </div>
-            <div className="relative overflow-hidden h-64 md:h-full">
-               <img 
-                 src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80&w=1200" 
-                 alt="Student Management System" 
-                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-               />
-               <div className="absolute inset-0 bg-primary/10 mix-blend-multiply opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
             </div>
           </div>
-        </div>
+        ))}
+      </div>
 
-        {/* Small Project 1 */}
-        <div className="project-card lg:col-span-4 p-8 bg-card rounded-3xl border border-white/5 flex flex-col">
-           <div className="h-48 rounded-2xl overflow-hidden mb-6">
-              <img 
-                src="https://images.unsplash.com/photo-1551288049-bbbda5366391?auto=format&fit=crop&q=80&w=800" 
-                alt="Network Dashboard" 
+      {/* --- MOBILE VIEW (Vertical Stack) --- */}
+      <div className="lg:hidden flex flex-col gap-12 px-6 pb-24">
+        {PROJECTS.map((project, index) => (
+          <div key={project.id} className="project-card-mobile group relative">
+            {/* Mobile Image */}
+            <div className="aspect-video w-full rounded-2xl overflow-hidden mb-6 border border-white/10 relative">
+              <span className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1 text-xs font-bold rounded-lg border border-white/10 z-10">
+                0{index + 1}
+              </span>
+              <img
+                src={project.image}
+                alt={project.title}
                 className="w-full h-full object-cover"
               />
-           </div>
-           <h3 className="text-xl font-bold mb-2">Network Monitor Dashboard</h3>
-           <p className="text-gray-500 text-sm mb-6">
-             Custom internal tool for real-time hardware status monitoring and network health checks.
-           </p>
-           <div className="mt-auto pt-6 border-t border-white/5 flex justify-between items-center">
-             <span className="text-xs text-gray-400">IT Ops / Dashboard</span>
-             <a href="#" className="text-primary hover:text-white transition-colors">
-               <ExternalLink size={20} />
-             </a>
-           </div>
-        </div>
+            </div>
+
+            {/* Mobile Content */}
+            <div className="space-y-4">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-amber-500 text-xs font-bold uppercase mb-1">
+                    {project.category}
+                  </p>
+                  <h3 className="text-2xl font-black">{project.title}</h3>
+                </div>
+                <a
+                  href="#"
+                  className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-white active:bg-amber-500 active:text-black transition-colors"
+                >
+                  <ArrowUpRight size={20} />
+                </a>
+              </div>
+              <p className="text-sm text-gray-400 line-clamp-2">
+                {project.desc}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {project.tech.map((t) => (
+                  <span
+                    key={t}
+                    className="text-[10px] uppercase font-bold text-gray-500 border border-white/5 px-2 py-1 rounded"
+                  >
+                    {t}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
-    </div>
+    </section>
   );
 };
 
