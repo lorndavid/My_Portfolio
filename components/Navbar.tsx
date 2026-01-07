@@ -155,7 +155,7 @@ const Navbar: React.FC = () => {
             href="#contact"
             className="group relative px-5 py-2 rounded-full overflow-hidden bg-white text-black font-bold text-xs uppercase tracking-wider flex items-center gap-2 hover:bg-amber-400 transition-colors duration-300"
           >
-            <span>Let's Talk</span>
+            <span>Hire Me</span>
             <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
           </a>
         </div>

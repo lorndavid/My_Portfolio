@@ -56,13 +56,10 @@ const Projects: React.FC = () => {
       gsap.registerPlugin(ScrollTrigger);
 
       // --- DESKTOP HORIZONTAL SCROLL LOGIC ---
-      // Only runs on screens larger than 1024px
       const mm = gsap.matchMedia();
 
       mm.add("(min-width: 1024px)", () => {
         const sections = gsap.utils.toArray(".project-panel");
-        const totalWidth = 100 * (sections.length - 1); // Calculate drag distance
-
         gsap.to(sections, {
           xPercent: -100 * (sections.length - 1),
           ease: "none",
@@ -71,7 +68,6 @@ const Projects: React.FC = () => {
             pin: true,
             scrub: 1,
             snap: 1 / (sections.length - 1),
-            // Adjust 'end' to control how long the scroll lasts
             end: () => "+=" + scrollContainerRef.current?.offsetWidth,
           },
         });
@@ -99,15 +95,23 @@ const Projects: React.FC = () => {
       ref={containerRef}
       className="bg-[#0a0a0a] text-white overflow-hidden relative"
     >
-      {/* HEADER (Absolute on Desktop, static on Mobile) */}
-      <div className="lg:absolute lg:top-12 lg:left-12 lg:z-10 px-6 py-12 lg:p-0">
-        <div className="flex items-center gap-4 mb-2">
+      {/* HEADER SECTION
+          - w-[80%] mx-auto: Centers the container width on mobile
+          - text-center: Centers the h2 text on mobile
+          - justify-center: Centers the flex row (line + span) on mobile
+          - lg:text-left / lg:justify-start: Resets to left align on Desktop
+      */}
+      <div className="w-[80%] mx-auto py-12 text-center lg:text-left lg:absolute lg:top-12 lg:left-12 lg:z-10 lg:w-auto lg:mx-0 lg:p-0">
+        {/* Top Label with Line */}
+        <div className="flex items-center justify-center lg:justify-start gap-4 mb-2">
           <div className="h-[1px] w-12 bg-amber-500"></div>
-          <span className="text-amber-500 font-bold uppercase tracking-widest text-xs">
+          <span className="text-amber-500 font-medium uppercase tracking-widest text-xs">
             Selected Works
           </span>
         </div>
-        <h2 className="text-4xl md:text-5xl font-black tracking-tighter">
+
+        {/* Main Title */}
+        <h2 className="text-3xl md:text-5xl font-medium tracking-tighter">
           Featured Projects
         </h2>
       </div>

@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from "react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Download } from "lucide-react"; // Import Download icon
+import { Download } from "lucide-react";
 
 const IMAGES = [
   "https://i.postimg.cc/hPssGvTs/vidddddd-removebg-preview.png",
@@ -244,8 +244,8 @@ const Hero: React.FC = () => {
 
             {/* Desktop Download CV Button */}
             <a
-              href="/Lorn_David_CV.pdf" // Replace with actual path
-              download
+              href="/LORN_David_CV.pdf"
+              download="LORN_David_CV.pdf"
               className="mt-8 flex items-center gap-2 px-6 py-3 bg-white/10 border border-white/20 rounded-full hover:bg-white hover:text-black hover:scale-105 transition-all duration-300 group"
             >
               <Download className="w-4 h-4" />
@@ -291,8 +291,8 @@ const Hero: React.FC = () => {
 
             {/* Mobile Download CV Button */}
             <a
-              href="/Lorn_David_CV.pdf" // Replace with actual path
-              download
+              href="/LORN_David_CV.pdf"
+              download="LORN_David_CV.pdf"
               className="mt-6 flex items-center gap-3 px-6 py-3 bg-amber-500 text-black rounded-xl font-bold uppercase tracking-widest text-xs shadow-lg shadow-amber-500/20 active:scale-95 transition-transform"
             >
               <Download className="w-4 h-4" />
